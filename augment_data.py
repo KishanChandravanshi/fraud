@@ -13,6 +13,7 @@ import imgaug as ia
 from imgaug import augmenters as iaa 
 
 df = pd.read_csv('final_annotation.csv')
+
 path2images = df.iloc[:,0:1].values
 boundingBoxes= df.iloc[:,1:5].values
 
@@ -22,6 +23,7 @@ sometimes = lambda aug: iaa.Sometimes(0.5, aug)
 
 for path, bounding in zip(path2images, boundingBoxes):
     # read the image into a numpy array using imageio
+    # augment a single image 8 times
     for i in range(8):
         print("working on {} image, please wait...".format(path[0].split('\\')[-1]))
         counter = 0  # because we'll be creating three custom images

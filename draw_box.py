@@ -15,12 +15,13 @@ save_directory = "Annotations"
 obj = 'vortex_center'
 
 def line_select_callback(clk, rls):
+	# just to specify that we're using the global variables
     global top_left_list
     global bottom_right_list
 
-    top_left_list.append((int(clk.xdata), int(clk.ydata)))
-    bottom_right_list.append((int(rls.xdata), int(rls.ydata)))
-    object_list.append(obj)
+    top_left_list.append((int(clk.xdata), int(clk.ydata))) # data when the user has clicked
+    bottom_right_list.append((int(rls.xdata), int(rls.ydata))) # data when the user has left the click
+    object_list.append(obj) # corresponding object
 
 def on_key_press(event):
     global object_list
@@ -28,18 +29,22 @@ def on_key_press(event):
     global bottom_right_list
     global img
     if event.key == 'q':
-        #write_xml(image_folder, img, object_list, top_left_list, bottom_right_list, save_directory)
-        #print(top_left_list)
-        #print(bottom_right_list)
+    	# if q is presses it will save the coordinates to a file
+
         x1, y1 = top_left_list[0][0], top_left_list[0][1]
         x2, y2 = bottom_right_list[0][0], bottom_right_list[0][1]
-        # print(top_left_list, bottom_right_list)
         with open('annotation.txt','a') as file:
-            
+            # we're going according to the retinaNet requirements i.e
+            # path/to/file,x1,y1,x2,y2,object_name
+            # no space in between
             path = str(img.path) + "," + str(x1) + "," + str(y1) + "," + str(x2) + "," + str(y2) + "," + str(obj) + "\n"
             file.write(path)
             
-        
+        # re-initialising the list for next image
+        # Note we can have multiple bounding boxes in a single image
+        # which will look like the following
+        # path/to/file,x1,y1,x2,y2,object_name,x1',y1',x2',y2',object_name'
+
         top_left_list = []
         bottom_right_list = []
         object_list = []
@@ -52,18 +57,16 @@ def toggle_selector(event):
 
 
 if __name__ == '__main__':
+	# scan through each image and let user annotate them
     for n, image_file in enumerate(os.scandir(image_folder)):
         img = image_file
         fig, ax = plt.subplots(1)
-        # size of the image displayed
-        # mngr = plt.get_current_fig_manager()
-        # mngr.window.setGeometry(250, 120, 1280, 1024)
         image = cv2.imread(image_file.path)
         # CV2 -> bgr and matplotlib -> rgb, so converting the bgr to rgb
         image = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         fig.set_dpi(200)
         ax.imshow(image)
-
+        # connecting the rectangular selector so that user can draw BB
         toggle_selector.RS = RectangleSelector(
             ax, line_select_callback,
             drawtype='box', useblit=True,
